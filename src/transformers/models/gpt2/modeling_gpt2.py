@@ -344,11 +344,6 @@ class GPT2Attention(nn.Module):
         else:
             present = None
 
-        # Permute to get the expected shape for Flash Attention
-        query = query.permute(0, 2, 1, 3)
-        key = key.permute(0, 2, 1, 3)
-        value = value.permute(0, 2, 1, 3)
-
         if self.reorder_and_upcast_attn:
             attn_output, attn_weights = self._upcast_and_reordered_attn(query, key, value, attention_mask, head_mask)
         else:
@@ -411,6 +406,12 @@ class GPT2FlashAttention2(GPT2Attention):
             present = (key, value)
         else:
             present = None
+
+
+        # Permute to get the expected shape for Flash Attention
+        query = query.permute(0, 2, 1, 3)
+        key = key.permute(0, 2, 1, 3)
+        value = value.permute(0, 2, 1, 3)
 
         attn_weights = self._flash_attention_forward(
             query, key, value, attention_mask, query_length, dropout=self.attn_dropout.p
